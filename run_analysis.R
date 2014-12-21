@@ -1,8 +1,7 @@
 ################################################################################
-## This script downloads the data, unzips it, and then creates two separate
-## tidy datasets. The first merges the training and test sets' mean and
-## standard deviation measurements. The second calculates the mean for
-## each subject/test combination.
+## Downloading the data files, unzipping them
+## Creating a tidy dataset which merges the training and test sets' mean and
+## standard deviations.
 ################################################################################
 
 setwd("N:/A-OB/Courses/DataCleaning-JL-JohnsHopkins/PR/")
@@ -11,8 +10,7 @@ setwd("N:/A-OB/Courses/DataCleaning-JL-JohnsHopkins/PR/")
 ## Functions
 ################################################################################
 
-## Load the activity labels and description to support easy conversion
-## to factors.
+## Load the activity labels and description for easy conversion to factors
 get_factor_info <- function(loc='UCI HAR Dataset/activity_labels.txt') {
     df <- read.table(loc, stringsAsFactors=FALSE)
     lvls <- df[,1]
@@ -20,9 +18,9 @@ get_factor_info <- function(loc='UCI HAR Dataset/activity_labels.txt') {
     list(levels=lvls, labels=lbls)
 }
 
-## Take the names in the features.txt file and make them more human readable.
+## Make the names in the features.txt file easier to read
 clean.names <- function(names) {
-    # Removed parentheses
+    # Remove parentheses
     clean <- gsub('*[()]', '', names)
     
     # Expand prefixes
@@ -36,11 +34,9 @@ clean.names <- function(names) {
     clean
 }
 
-## Load the mean and standard deviation of the measurements in the given
-## directory.
-## Input
-##  set     Which set of data to load. Either 'test' or 'train'.
-## Return a data firm with the appropriate statistics.
+## Load the mean and standard deviation of the measurements in the given directory.
+## Input : 'test' or 'train'.
+## Return data with the appropriate statistics.
 load_data <- function(set='test') {
     # Load the recorded statistics
     stats <- read.table(paste0('UCI HAR Dataset/', set, '/X_', set, '.txt'))
@@ -84,7 +80,7 @@ load_data <- function(set='test') {
 ## The script
 ################################################################################
 
-# Download and extract the data, if it hasn't been done already.
+# Download and extract the data, if it hasn't been already done.
 if(!file.exists('UCI HAR Dataset')){
     url <- paste0('https://d396qusza40orc.cloudfront.net/',
                   'getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip')
@@ -92,7 +88,7 @@ if(!file.exists('UCI HAR Dataset')){
     unzip('dataset.zip')
 }
 
-# Tidy the data, if it hasn't been done already.
+# Tidy the data, if it hasn't been already done.
 if(!file.exists('tidy.txt')){
     
     # Load the data sets
@@ -104,23 +100,4 @@ if(!file.exists('tidy.txt')){
     
     # Write the merged data set to a text file
     write.table(merged, file='tidy.txt')
-}
-
-## Make a second tidy data set that takes the mean for each subject/test.
-if(!file.exists('tidy-summarized.txt')){
-    library(data.table)
-    
-    # Read in the data
-    df <- read.table('tidy.txt')
-    dt <- data.table(df)
-    
-    # Set the keys
-    keys <- c('Subject', 'Test')
-    setkeyv(dt, keys)
-    
-    # Summarize data basd on subject and test
-    n.dt <- dt[, lapply(.SD, mean), by=key(dt)]
-    
-    # Save the results
-    write.table(n.dt, file='tidy-summarized.txt')
 }
